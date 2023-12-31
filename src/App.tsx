@@ -6,6 +6,7 @@ import Home from './root/pages/Home';
 import AuthLayout from './auth/AuthLayout';
 import RootLayout from './root/RootLayout';
 
+
 const App = () => {
   return (
     <main >

@@ -14,9 +14,13 @@ import { Input } from "@/components/ui/input"
 import { signupValidation } from "@/lib/validation"
 import Loader from "@/components/shared/Loader"
 import { Link } from "react-router-dom"
+import { createUserAccount } from "@/lib/appwrite/api"
+
 
 function SignupForm() {
+
   const isLoading = false;
+
   const form = useForm<z.infer<typeof signupValidation>>({
     resolver: zodResolver(signupValidation),
     defaultValues: {
@@ -28,8 +32,10 @@ function SignupForm() {
   })
  
   function onSubmit(values: z.infer<typeof signupValidation>) {
-    console.log(values)
+    const newUserAccount = createUserAccount(values);
+    console.log(newUserAccount);
   }
+
   return (
     <Form {...form}>
       <div className="sm:w-420 flex-center flex-col">
@@ -70,7 +76,7 @@ function SignupForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input type="email" className="shad-input" {...field} />
                 </FormControl>
