@@ -1,16 +1,25 @@
-import { appwriteConfig } from "@/conf/conf";
-import { Client, Account } from "appwrite";
 
- 
+import { Client, Account, Databases, Storage, Avatars } from "appwrite";
+
+export const appwriteConfig = {
+    url: String(import.meta.env.VITE_APPWRITE_URL),
+    projectId: String(import.meta.env.VITE_APPWRITE_PROJECT_ID),
+    databaseId: String(import.meta.env.VITE_APPWRITE_DATABASE_ID),
+    storageId: String(import.meta.env.VITE_APPWRITE_STORAGE_ID),
+    savesCollectionId: String(import.meta.env.VITE_APPWRITE_SAVES_COLLECTION_ID),
+    postsCollectionId: String(import.meta.env.VITE_APPWRITE_POSTS_COLLECTION_ID),
+    usersCollectionId: String(import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID),
+}
+
 export const client = new Client()
 
 client.setEndpoint("https://cloud.appwrite.io/v1");
 client.setProject("65917109b86cee227df4");
 
-console.log(appwriteConfig.appwriteUrl);
-console.log(appwriteConfig.projectId);
-
 export const account = new Account(client);
+export const database = new Databases(client);
+export const storage = new Storage(client);
+export const avatars = new Avatars(client);
 
 
 
