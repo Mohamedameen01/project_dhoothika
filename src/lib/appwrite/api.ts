@@ -82,6 +82,16 @@ export async function getCurrentUser() {
     }
 }
 
+export async function signOutAccount() {
+    try {
+        const session = await account.deleteSession("current");
+
+        return session;
+    } catch(error) {
+        console.log(error);
+    }   
+}
+
 console.log("URL: " + appwriteConfig.url);
 console.log("PROJECT ID: " + appwriteConfig.projectId);
 console.log("DATABASE ID: " + appwriteConfig.databaseId);

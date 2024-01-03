@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/toaster"
 
 const App = () => {
   return (
-    <main >
+    <main className='flex h-screen'>
       <Routes>
         {/* public Routes*/}
         <Route element={<AuthLayout />}>
