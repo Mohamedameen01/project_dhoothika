@@ -3,35 +3,50 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "../ui/textarea"
 import FileUploader from "../shared/FileUploader"
- 
-const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-})
+import { postValidation } from "@/lib/validation"
+import { Models } from "appwrite"
+import { useUserContext } from "@/context/AuthContext"
+import { useToast } from "../ui/use-toast"
+import { useNavigate } from "react-router-dom"
+import { useCreatePost } from "@/lib/react-query/queriesAndMutations"
 
-function PostForms({ post }) {
+type postFormProps = {
+  post?: Models.Document;
+}
 
-  const form = useForm<z.infer<typeof formSchema>>({
-      resolver: zodResolver(formSchema),
+function PostForms({ post }: postFormProps) {
+  const { mutateAsync: createPost, isLoading: isLoadingCreate} = useCreatePost();
+  const {user} = useUserContext();
+  const {toast} = useToast();
+  const navigate = useNavigate();
+
+  const form = useForm<z.infer<typeof postValidation>>({
+      resolver: zodResolver(postValidation),
       defaultValues: {
-        username: "",
+        caption: post? post?.caption : "",
+        file: [],
+        location: post? post?.location : "",
+        tags: post? post?.tags.join(',') : ""
       },
     })
    
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
+  async function onSubmit(values: z.infer<typeof postValidation>) {
+    const newPost = await createPost({
+      ...values,
+      userId: user.id
+    })
+
+    if (!newPost) {
+      toast({
+        title: "Please try again."
+      })
+    }
+
+    navigate('/');
   }
     
   return (

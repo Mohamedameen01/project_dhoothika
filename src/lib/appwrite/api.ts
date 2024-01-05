@@ -1,5 +1,5 @@
-import { INewUser } from "@/types";
-import { account, appwriteConfig, avatars, database } from "./config";
+import { INewPost, INewUser } from "@/types";
+import { account, appwriteConfig, avatars, databases, storage } from "./config";
 import { ID, Query } from "appwrite";
 
 export async function createUserAccount(user:INewUser) {
@@ -38,7 +38,7 @@ export async function saveUserToDB(user: {
     username?: string;
 }) {
     try {
-        const newUser = await database.createDocument(
+        const newUser = await databases.createDocument(
             "65923cebf1425ca1eb79",
             "6592401a120ab3fd366a",
             ID.unique(),
@@ -67,7 +67,7 @@ export async function getCurrentUser() {
 
         if (!currentAccount) throw Error;
         
-        const currentUser = await database.listDocuments(
+        const currentUser = await databases.listDocuments(
             "65923cebf1425ca1eb79",
             "6592401a120ab3fd366a",
             [Query.equal('accountId', (await currentAccount).$id)]
@@ -92,10 +92,102 @@ export async function signOutAccount() {
     }   
 }
 
-console.log("URL: " + appwriteConfig.url);
-console.log("PROJECT ID: " + appwriteConfig.projectId);
-console.log("DATABASE ID: " + appwriteConfig.databaseId);
-console.log("STORAGE ID: " + appwriteConfig.storageId);
-console.log("USER ID: " + appwriteConfig.usersCollectionId);
-console.log("POST ID: " + appwriteConfig.postsCollectionId);
-console.log("SAVE ID: " + appwriteConfig.savesCollectionId);
+export async function createPost(post: INewPost) {
+    try {
+        const uploadedFile = await uploadFile(post.file[0])
+
+        if(!uploadedFile) throw Error;
+
+        const fileUrl = await getFilePreview(uploadedFile.$id);
+
+        if(!fileUrl) {
+            deleteFile(uploadedFile.$id)
+            throw Error;
+        }
+
+        const tags = post.tags?.replace(/ /g, "").split(",") || [];
+
+        const newPost = await databases.createDocument(
+            "65923cebf1425ca1eb79",
+            "65923fe1c1d2162a26bb",
+            ID.unique(),
+            {
+                creator: post.userId,
+                caption: post.caption,
+                imageUrl: fileUrl,
+                imageId: uploadedFile.$id,
+                location: post.location,
+                tags: tags
+            }
+        )
+
+        if (!newPost) {
+            await deleteFile(uploadedFile.$id)
+            throw Error;
+        }
+
+        return newPost;
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export async function uploadFile(file: File) {
+    try {
+        const uploadedFile = await storage.createFile(
+            '65923cb796209c51484f',
+            ID.unique(),
+            file
+        )
+
+        return uploadedFile
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export async function getFilePreview(fileId: string) {
+    try {
+        const fileUrl = await storage.getFilePreview(
+            '65923cb796209c51484f',
+            fileId,
+            2000,
+            2000,
+            "top",
+            100
+        )
+
+        return fileUrl;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export async function deleteFile(fileId: string) {
+    try {
+        await storage.deleteFile('65923cb796209c51484f', fileId);
+        
+        return { status: "ok"};
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+// console.log("URL: " + appwriteConfig.url);
+// console.log("PROJECT ID: " + appwriteConfig.projectId);
+// console.log("DATABASE ID: " + appwriteConfig.databaseId);
+// console.log("STORAGE ID: " + appwriteConfig.storageId);
+// console.log("USER ID: " + appwriteConfig.usersCollectionId);
+// console.log("POST ID: " + appwriteConfig.postsCollectionId);
+// console.log("SAVE ID: " + appwriteConfig.savesCollectionId);
