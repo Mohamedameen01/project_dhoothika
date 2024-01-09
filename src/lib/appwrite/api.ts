@@ -1,5 +1,5 @@
 import { INewPost, INewUser } from "@/types";
-import { account, appwriteConfig, avatars, databases, storage } from "./config";
+import { account, avatars, databases, storage } from "./config";
 import { ID, Query } from "appwrite";
 
 export async function createUserAccount(user:INewUser) {
@@ -186,6 +186,59 @@ export async function getRecentPosts() {
     if (!posts) throw Error;
 
     return posts;
+}
+
+export async function likePost(postId: string, likesArray: string[]) {
+    try {
+        const updatedPost = await databases.updateDocument(
+            "65923cebf1425ca1eb79",
+            "65923fe1c1d2162a26bb",
+            postId,
+            {
+                likes: likesArray
+            }
+        )
+        if (!updatedPost) throw Error
+
+        return updatedPost;
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export async function savePost(postId: string, userId: string) {
+    try {
+        const updatedPost = await databases.createDocument(
+            "65923cebf1425ca1eb79",
+            "65923fff8917e829b6e0",
+            ID.unique(),
+            {
+                user: userId,
+                post: postId
+            }
+        )
+        if (!updatedPost) throw Error
+
+        return updatedPost;
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export async function deleteSavedPost(saveRecordId:string) {
+    try {
+        const statusCode = await databases.deleteDocument(
+            "65923cebf1425ca1eb79",
+            "65923fff8917e829b6e0",
+            saveRecordId
+        )
+
+        if (!statusCode) throw Error;
+
+        return { status: "Ok"}
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 
